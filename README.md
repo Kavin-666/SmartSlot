@@ -1,52 +1,67 @@
-# SmartSlot — Concurrent Booking & Resource Platform
+<div align="center">
 
-> **"Book smarter. Never double‑book."**
+# 🚀 SmartSlot
 
-SmartSlot is a full‑stack JavaScript application that provides a **production‑grade, concurrency‑safe booking system** with wait‑list promotion, role‑based access, and a polished UI built with React, Vite, and Tailwind CSS.
+### Smart Scheduling. Seamless Booking.
+
+A full-stack appointment and resource booking platform designed to make scheduling simple, efficient, and reliable.
+
+<p>
+  <img src="https://img.shields.io/badge/Full--Stack-Web%20Application-blue?style=for-the-badge" alt="Full Stack Application" />
+  <img src="https://img.shields.io/badge/Status-Development-orange?style=for-the-badge" alt="Development Status" />
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+</p>
+
+**[🌐 Live Demo](https://smart-slot-nnmy1urwz-kavin-079c.vercel.app)** · **[📦 GitHub Repository](https://github.com/Kavin-666/SmartSlot)**
+
+</div>
 
 ---
 
-## 📚 Table of Contents
-- [Demo](#demo)
-- [Features](#features)
-- [Architecture Overview](#architecture-overview)
-- [Tech Stack](#tech-stack)
-- [Local Development](#local-development)
-- [Production Deployment](#production-deployment)
-- [Environment Variables](#environment-variables)
-- [Academic End‑Term Submission](#academic-end‑term-submission)
-- [License](#license)
+## 📌 About the Project
 
----
+**SmartSlot** is a full-stack booking application that helps users discover available resources, reserve time slots, and manage their bookings through a centralized interface.
 
-## 🎮 Demo
-- **Frontend (Vercel):** `https://smart-slot-o66jt5ybe-kavin-079c.vercel.app, https://smart-slot-lpfwr15t6-kavin-079c.vercel.app, https://smart-slot-1pfwrl5t6-kavin-079c.vercel.app, https://smart-slot-nnmy1urwz-kavin-079c.vercel.app`
-- **Backend (Render):** `https://smartslot-1-ih37.onrender.com`
-- **Health Check:** `https://smartslot-1-ih37.onrender.com/api/health`
-- **Frontend (Vercel):** `https://smart-slot-1pfwrl5t6-kavin-079c.vercel.app`
-- **Backend (Render):** `https://smartslot-1-ih37.onrender.com`
-- **Health Check:** `https://smartslot-1-ih37.onrender.com/api/health`
-- **Frontend (Vercel):** `https://<your‑frontend>.vercel.app`
-- **Backend (Render):** `https://<your‑backend>.onrender.com`
-- **Health Check:** `https://<your‑backend>.onrender.com/api/health`
+The project focuses on solving common scheduling problems, including double bookings, unavailable time slots, and managing users waiting for a reservation.
 
-> The demo accounts are pre‑seeded:
->
-> | Role | Email | Password |
-> >|---|---|---|
-> >| Administrator | `admin@example.com` | `admin123` |
-> >| Standard User | `user@example.com` | `user123` |
+It combines a responsive frontend with a backend API and database to provide a structured booking experience.
+
+> **Note:** Verify that the live demo URL is the correct production deployment before submission.
 
 ---
 
 ## ✨ Features
-- **Atomic booking** using MongoDB conditional updates → guarantees *zero double bookings* even under high concurrency.
-- **Partial unique index** on `(resourceId, startAt, status)` to enforce uniqueness at the DB level.
-- **Wait‑list FIFO promotion** – automatically assigns a freed slot to the earliest wait‑list entry.
-- **Role‑based authentication** (admin vs. standard user) with JWT.
-- **Comprehensive test suite** (Jest + Supertest) covering concurrency, auth, resource management.
-- **Responsive UI** built with React 18, Vite, Tailwind, and Framer Motion.
-- **Dark‑mode support** via `ThemeContext` and Tailwind theming.
+
+### 📅 Smart Booking System
+- Browse available resources and time slots.
+- Create and manage bookings.
+- Prevent conflicting reservations through backend validation.
+- Track booking details and status.
+
+### ⏳ Waitlist Management
+- Automatic promotion from wait‑list when a slot becomes free.
+- FIFO ordering ensures fair allocation.
+
+### 🔐 Role‑Based Authentication
+- Secure JWT‑based login.
+- Different dashboards for owners, clients, and administrators.
+
+### 📱 Responsive UI
+- Built with React 18, Vite, Tailwind CSS, and Framer Motion.
+- Mobile‑first design with dark‑mode support.
 
 ---
 
@@ -70,13 +85,13 @@ flowchart TD
 ---
 
 ## 🛠️ Tech Stack
-| Layer | Technology |
-|-------|------------|
-| **Backend** | Node.js 24, Express 4, Mongoose 8, JWT, CORS, Helmet |
-| **Frontend** | React 18, Vite, Tailwind CSS, Framer Motion, Lucide‑React |
-| **Database** | MongoDB Atlas (managed) |
-| **Testing** | Jest 29, Supertest |
-| **Deployment** | Render (backend), Vercel (frontend) |
+| Layer      | Technology                                           |
+|------------|------------------------------------------------------|
+| **Backend**| Node.js 24, Express 4, Mongoose 8, JWT, CORS, Helmet |
+| **Frontend**| React 18, Vite, Tailwind CSS, Framer Motion, Lucide‑React |
+| **Database**| MongoDB Atlas (managed)                             |
+| **Testing**| Jest 29, Supertest                                   |
+| **Deployment**| Render (backend), Vercel (frontend)                |
 
 ---
 
@@ -86,11 +101,11 @@ flowchart TD
 # Install root dependencies (optional) and workspace deps
 cd smartslot
 # Backend
-tcd backend && npm install && cp .env.example .env   # edit .env with your local MongoDB URI
+cd backend && npm install && cp .env.example .env   # edit .env with your local MongoDB URI
 npm run dev   # starts the API on PORT 5000
 
 # Frontend
-tcd ../frontend && npm install && cp .env.example .env   # set VITE_API_BASE_URL to http://localhost:5000/api/v1
+cd ../frontend && npm install && cp .env.example .env   # set VITE_API_BASE_URL to http://localhost:5000/api/v1
 npm run dev   # starts Vite dev server on http://localhost:5173
 ```
 
@@ -98,7 +113,7 @@ Run the test suite:
 ```bash
 cd backend && npm test
 ```
-All tests should pass (14/14).
+All tests should pass.
 
 ---
 
@@ -142,21 +157,9 @@ VITE_API_BASE_URL=/api/v1   # relative for local dev, override in Vercel with fu
 
 ---
 
-## 🎓 Academic End‑Term Submission Details
-- **Project Name:** SmartSlot
-- **Problem Statement:** High‑contention scheduling systems suffer from double bookings due to non‑atomic application logic. SmartSlot eliminates this by using atomic MongoDB updates and a wait‑list promotion algorithm.
-- **GitHub Repository:** https://github.com/Kavin-666/SmartSlot
-- **Live Frontend URL:** *to be filled after Vercel deploy*
-- **Live Backend Health URL:** *to be filled after Render deploy*
-- **Demo Video:** Record a 3‑5 min walkthrough (login → book a slot → cancel → wait‑list promotion) and host it on YouTube (unlisted) or Google Drive; provide the shareable link.
-- **Tech Stack:** Node.js, Express, MongoDB, Mongoose, React, Vite, Tailwind CSS, Jest, Supertest.
-- **Key Features:** Concurrency‑safe booking, wait‑list promotion, role‑based JWT auth, comprehensive automated tests.
-
----
-
 ## 📄 License
 MIT © 2026 Kavin
 
 ---
 
-*This README will be updated automatically with the live deployment URLs once the services are up.*
+*This README reflects the current state of the project. Update URLs if deployments change.*
