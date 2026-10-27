@@ -10,6 +10,7 @@ const registerSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
+  role: z.enum(['owner', 'client', 'user', 'admin']).optional(),
 });
 
 const loginSchema = z.object({
@@ -30,7 +31,8 @@ const register = asyncHandler(async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ message: 'Invalid input', errors: parsed.error.format() });
   }
-  const { name, email, password } = parsed.data;
+  const { name, email, password, role } = parsed.data;
+  const userRole = role || 'user';
 
   const existing = await User.findOne({ email });
   if (existing) {
@@ -40,10 +42,9 @@ const register = asyncHandler(async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  const user = await User.create({ name, email, passwordHash });
+  const user = await User.create({ name, email, passwordHash, role: userRole });
 
   const token = generateToken(user._id, user.role);
-  // Return token in body (frontend can store as HttpOnly cookie later)
   res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
 });
 

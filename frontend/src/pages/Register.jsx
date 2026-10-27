@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { UserPlus, Lock, Mail, User, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { UserPlus, Lock, Mail, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
+  const [role, setRole] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -17,12 +19,16 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    if (!role) {
+      setErrorMsg('Please select a role');
+      return;
+    }
     if (password.length < 6) {
       setErrorMsg('Password must be at least 6 characters');
       return;
     }
     setSubmitting(true);
-    const res = await register(name, email, password);
+    const res = await register(name, email, password, role);
     setSubmitting(false);
     if (res.success) {
       navigate('/resources');
@@ -59,6 +65,16 @@ export default function Register() {
             <span>{errorMsg}</span>
           </div>
         )}
+
+        {/* Role selector */}
+        <div className="mb-4 space-y-2">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Select Account Type</p>
+          <div className="flex justify-between">
+            <button type="button" onClick={() => setRole('owner')} className={`flex-1 mx-1 py-2 rounded ${role === 'owner' ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>Commercial Facility Owner</button>
+            <button type="button" onClick={() => setRole('client')} className={`flex-1 mx-1 py-2 rounded ${role === 'client' ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>End-User Client</button>
+            <button type="button" onClick={() => setRole('admin')} className={`flex-1 mx-1 py-2 rounded ${role === 'admin' ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>System Administrator</button>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

@@ -58,9 +58,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, role) => {
     try {
-      const { data } = await api.post('/auth/register', { name, email, password });
+      const { data } = await api.post('/auth/register', { name, email, password, role });
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem('smartslot_auth', JSON.stringify({ user: data.user, token: data.token }));
