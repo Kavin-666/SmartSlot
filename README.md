@@ -162,4 +162,6 @@ MIT © 2026 Kavin
 
 ---
 
+*Demo Video: [SmartSlot Overview](https://drive.google.com/file/d/1k2mPCw6ZraMdU9_SWILVvTw2EAYiJv7h/view?usp=sharing)*
+
 *This README reflects the current state of the project. Update URLs if deployments change.*
