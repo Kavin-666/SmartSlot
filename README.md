@@ -68,10 +68,10 @@ It combines a responsive frontend with a backend API and database to provide a s
 ## 🏗️ Architecture Overview
 ```mermaid
 flowchart TD
-    subgraph Frontend[Frontend (Vite + React)]
+    subgraph "Frontend (Vite + React)"
         FE[React SPA] -->|API Calls| BE[Backend API]
     end
-    subgraph Backend[Backend (Node.js + Express)]
+    subgraph "Backend (Node.js + Express)"
         BE -->|Mongoose| DB[MongoDB Atlas]
     end
     FE -->|Static assets| CDN[Vercel Edge]
