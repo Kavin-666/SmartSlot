@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/api';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, 
   Layers, 
@@ -9,16 +10,14 @@ import {
   MapPin, 
   Settings, 
   CalendarCheck, 
-  Clock, 
   AlertTriangle, 
-  CheckCircle2, 
   ExternalLink, 
   ShieldAlert, 
   Users, 
-  Trash2,
-  DollarSign,
   ArrowLeft,
-  Calendar,
+  X,
+  CheckCircle2,
+  Clock,
   Sparkles
 } from 'lucide-react';
 
@@ -29,9 +28,8 @@ export default function PropertyManager() {
   const [resources, setResources] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [bookings, setBookings] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('structure'); // 'structure' | 'maintenance' | 'bookings' | 'analytics' | 'audit'
+  const [activeTab, setActiveTab] = useState('structure');
 
   // Modals
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
@@ -74,7 +72,6 @@ export default function PropertyManager() {
       setSections(res.data.sections || []);
       setResources(res.data.resources || []);
 
-      // If activeTab is bookings or analytics, fetch them
       fetchSecondaryData();
     } catch (err) {
       toast.error('Failed to load property details');
@@ -85,14 +82,12 @@ export default function PropertyManager() {
 
   const fetchSecondaryData = async () => {
     try {
-      const [analyticsRes, bookingsRes, auditRes] = await Promise.all([
+      const [analyticsRes, bookingsRes] = await Promise.all([
         api.get(`/properties/${id}/analytics`),
         api.get(`/properties/${id}/bookings`),
-        api.get(`/properties/${id}/audit-logs`),
       ]);
       setAnalytics(analyticsRes.data.metrics);
       setBookings(bookingsRes.data.bookings || []);
-      setAuditLogs(auditRes.data.logs || []);
     } catch (e) {}
   };
 
@@ -184,9 +179,13 @@ export default function PropertyManager() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center space-y-3">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p className="text-sm font-medium text-slate-500">Loading facility management workspace...</p>
+      <div className="space-y-6 pb-16">
+        <div className="h-6 skeleton w-36 rounded-md"></div>
+        <div className="glass-card rounded-3xl p-8 space-y-4">
+          <div className="h-6 skeleton w-1/4 rounded-md"></div>
+          <div className="h-8 skeleton w-1/2 rounded-md"></div>
+          <div className="h-4 skeleton w-full rounded-md"></div>
+        </div>
       </div>
     );
   }
@@ -201,7 +200,7 @@ export default function PropertyManager() {
       <div>
         <Link
           to="/owner"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Owner Portal
@@ -209,34 +208,50 @@ export default function PropertyManager() {
       </div>
 
       {/* Property Hero Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col md:flex-row items-start justify-between gap-6">
-        <div className="space-y-2 max-w-2xl">
-          <div className="flex items-center gap-2">
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-start justify-between gap-6 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 dark:bg-brand-500/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+
+        <div className="space-y-2.5 max-w-2xl relative z-10">
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                isPublished ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+              className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm border ${
+                isPublished 
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30' 
+                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
               }`}
             >
               Status: {property.status}
             </span>
-            <span className="text-xs font-semibold text-slate-500">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               {property.type?.replace('_', ' ')}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              • {sections.length} Floor(s) • {resources.length} Resource(s)
             </span>
           </div>
 
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{property.name}</h1>
-          <p className="text-sm text-slate-600">{property.description}</p>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <MapPin className="w-4 h-4 text-slate-400" />
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            {property.name}
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            {property.description}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
+            <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
             <span>{property.location?.address}, {property.location?.city}, {property.location?.country}</span>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0 relative z-10">
           <Link
             to={`/properties/${property._id}`}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl glass-card text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 hover:border-brand-500/40"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Public Preview
@@ -244,73 +259,81 @@ export default function PropertyManager() {
 
           <button
             onClick={handleTogglePublish}
-            className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 ${
+            className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${
               isPublished
-                ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100'
+                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/20'
             }`}
           >
             {isPublished ? 'Unpublish to Draft' : 'Publish Property Live'}
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 space-x-6 text-sm font-semibold overflow-x-auto">
+      <div className="flex border-b border-slate-200/80 dark:border-white/[0.08] space-x-6 text-sm font-semibold overflow-x-auto pb-1 transition-colors">
         <button
           onClick={() => setActiveTab('structure')}
-          className={`pb-3 flex items-center gap-1.5 shrink-0 transition-colors ${
-            activeTab === 'structure' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'
+          className={`pb-3 flex items-center gap-2 shrink-0 transition-colors ${
+            activeTab === 'structure' 
+              ? 'text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <Layers className="w-4 h-4" />
-          Floors & Resources ({resources.length})
+          <span>Floors & Resources ({resources.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('maintenance')}
-          className={`pb-3 flex items-center gap-1.5 shrink-0 transition-colors ${
-            activeTab === 'maintenance' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'
+          className={`pb-3 flex items-center gap-2 shrink-0 transition-colors ${
+            activeTab === 'maintenance' 
+              ? 'text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
-          Maintenance Blocks
+          <span>Maintenance Windows</span>
         </button>
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`pb-3 flex items-center gap-1.5 shrink-0 transition-colors ${
-            activeTab === 'bookings' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'
+          className={`pb-3 flex items-center gap-2 shrink-0 transition-colors ${
+            activeTab === 'bookings' 
+              ? 'text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <CalendarCheck className="w-4 h-4" />
-          Property Bookings ({bookings.length})
+          <span>Facility Bookings ({bookings.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`pb-3 flex items-center gap-1.5 shrink-0 transition-colors ${
-            activeTab === 'analytics' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'
+          className={`pb-3 flex items-center gap-2 shrink-0 transition-colors ${
+            activeTab === 'analytics' 
+              ? 'text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <Settings className="w-4 h-4" />
-          Facility Analytics
+          <span>Facility Analytics</span>
         </button>
       </div>
 
       {/* TAB 1: FLOORS & RESOURCES */}
       {activeTab === 'structure' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Physical Building Hierarchy</h2>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Physical Building Hierarchy</h2>
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setIsFloorModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl glass-card text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 hover:border-brand-500/40 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-brand-500" />
                 Add Floor
               </button>
               <button
                 onClick={() => setIsRoomModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm shadow-indigo-100 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 flex items-center gap-1.5 active:scale-95 transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Resource / Room
@@ -324,50 +347,50 @@ export default function PropertyManager() {
             );
 
             return (
-              <div key={floor._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-extrabold text-xs">
+              <div key={floor._id} className="glass-card rounded-3xl p-6 sm:p-7 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-white/[0.08] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200/50 dark:border-brand-800/50 flex items-center justify-center font-extrabold text-xs">
                       L{floor.level}
                     </span>
-                    <h3 className="font-bold text-slate-900 text-base">{floor.name}</h3>
-                    <span className="text-xs text-slate-400">({floorResources.length} resources)</span>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight">{floor.name}</h3>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">({floorResources.length} resources)</span>
                   </div>
                   <button
                     onClick={() => {
                       setNewRoom({ ...newRoom, sectionId: floor._id });
                       setIsRoomModalOpen(true);
                     }}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                    className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 flex items-center gap-1"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     Add Room Here
                   </button>
                 </div>
 
                 {floorResources.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic py-2">No resources assigned to this floor yet.</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">No rooms configured on this level yet.</p>
                 ) : (
                   <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {floorResources.map((r) => (
                       <div
                         key={r._id}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 hover:border-indigo-300 transition-all"
+                        className="glass-card glass-card-hover p-4 rounded-2xl space-y-2.5 transition-all"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-900">{r.name}</span>
-                          <span className="text-[10px] uppercase font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{r.name}</span>
+                          <span className="text-[10px] uppercase font-bold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 px-2 py-0.5 rounded-md border border-brand-200/50">
                             {r.resourceType?.replace('_', ' ')}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 line-clamp-1">{r.description || 'Standard facility resource'}</p>
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-xs">
-                          <span className="text-slate-600 flex items-center gap-1">
-                            <Users className="w-3 h-3 text-slate-400" />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">{r.description || 'Standard facility resource'}</p>
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.06] text-xs">
+                          <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-medium">
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
                             Capacity: {r.capacity}
                           </span>
-                          <span className="font-bold text-emerald-700">
-                            {r.pricing?.model === 'free' ? 'Free' : `$${r.pricing?.price} / ${r.pricing?.model}`}
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            {r.pricing?.model === 'free' ? 'Complimentary' : `$${r.pricing?.price} / ${r.pricing?.model}`}
                           </span>
                         </div>
                       </div>
@@ -382,25 +405,25 @@ export default function PropertyManager() {
 
       {/* TAB 2: MAINTENANCE BLOCKS */}
       {activeTab === 'maintenance' && (
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Scheduled Maintenance Windows</h2>
-              <p className="text-xs text-slate-500">Temporarily mark slots unavailable for cleaning, duct work, or repairs.</p>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Scheduled Maintenance Windows</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Temporarily mark slots unavailable for servicing, duct cleaning, or repairs.</p>
             </div>
             <button
               onClick={() => setIsMaintModalOpen(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 flex items-center gap-1.5 self-start sm:self-auto active:scale-95 transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
-              Schedule Maintenance
+              <span>Schedule Maintenance</span>
             </button>
           </div>
 
-          <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>
-              During scheduled maintenance windows, the booking engine automatically disables affected slots and returns 409 Conflict to concurrent requests.
+          <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 rounded-2xl text-xs flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+            <span className="leading-relaxed">
+              During scheduled maintenance windows, the booking engine automatically disables affected discrete 30-min slots and returns 409 Conflict to concurrent requests.
             </span>
           </div>
         </div>
@@ -408,36 +431,38 @@ export default function PropertyManager() {
 
       {/* TAB 3: BOOKINGS */}
       {activeTab === 'bookings' && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-900">Tenant Bookings for this Facility</h2>
+        <div className="glass-card rounded-3xl overflow-hidden">
+          <div className="p-6 border-b border-slate-200/70 dark:border-white/[0.08]">
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Tenant Bookings for this Facility</h2>
           </div>
           {bookings.length === 0 ? (
-            <div className="py-16 text-center text-xs text-slate-400">No active bookings recorded for this property yet.</div>
+            <div className="py-20 text-center text-xs text-slate-400 dark:text-slate-500">No active bookings recorded for this property yet.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                <thead className="bg-slate-50/70 dark:bg-white/[0.02] text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200/70 dark:border-white/[0.08]">
                   <tr>
-                    <th className="px-6 py-3">Reference</th>
-                    <th className="px-6 py-3">Resource</th>
-                    <th className="px-6 py-3">User</th>
-                    <th className="px-6 py-3">Date & Time (UTC)</th>
-                    <th className="px-6 py-3">Status</th>
+                    <th className="px-6 py-3.5">Reference</th>
+                    <th className="px-6 py-3.5">Resource</th>
+                    <th className="px-6 py-3.5">Tenant User</th>
+                    <th className="px-6 py-3.5">UTC Schedule</th>
+                    <th className="px-6 py-3.5">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
                   {bookings.map((b) => (
-                    <tr key={b._id}>
-                      <td className="px-6 py-4 font-mono text-xs font-bold text-indigo-700">{b.reference}</td>
-                      <td className="px-6 py-4 font-bold text-slate-900">{b.resourceId?.name}</td>
+                    <tr key={b._id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 font-mono text-xs font-bold text-brand-700 dark:text-brand-300">{b.reference}</td>
+                      <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{b.resourceId?.name}</td>
                       <td className="px-6 py-4">{b.userId?.name} ({b.userId?.email})</td>
                       <td className="px-6 py-4 text-xs font-mono">
                         {new Date(b.startAt).toLocaleString([], { timeZone: 'UTC' })}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                          b.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          b.status === 'confirmed' 
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20' 
+                            : 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20'
                         }`}>
                           {b.status}
                         </span>
@@ -454,103 +479,115 @@ export default function PropertyManager() {
       {/* TAB 4: ANALYTICS */}
       {activeTab === 'analytics' && analytics && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-            <div className="text-xs text-slate-400 font-bold uppercase">Total Bookings</div>
-            <div className="text-2xl font-extrabold text-slate-900 mt-1">{analytics.totalBookings}</div>
+          <div className="glass-card p-5 rounded-2xl space-y-1">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Total Bookings</div>
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{analytics.totalBookings}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-            <div className="text-xs text-slate-400 font-bold uppercase">Confirmed Active</div>
-            <div className="text-2xl font-extrabold text-emerald-600 mt-1">{analytics.confirmedBookings}</div>
+          <div className="glass-card p-5 rounded-2xl space-y-1">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Confirmed Active</div>
+            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{analytics.confirmedBookings}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-            <div className="text-xs text-slate-400 font-bold uppercase">Upcoming Slots</div>
-            <div className="text-2xl font-extrabold text-indigo-600 mt-1">{analytics.upcomingBookings}</div>
+          <div className="glass-card p-5 rounded-2xl space-y-1">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Upcoming Slots</div>
+            <div className="text-3xl font-extrabold text-brand-600 dark:text-brand-400 mt-1">{analytics.upcomingBookings}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-            <div className="text-xs text-slate-400 font-bold uppercase">Cancellation Rate</div>
-            <div className="text-2xl font-extrabold text-slate-700 mt-1">{analytics.cancellationRate}</div>
+          <div className="glass-card p-5 rounded-2xl space-y-1">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Cancellation Rate</div>
+            <div className="text-3xl font-extrabold text-slate-700 dark:text-slate-300 mt-1">{analytics.cancellationRate}</div>
           </div>
         </div>
       )}
 
       {/* MODAL: ADD FLOOR */}
       {isFloorModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Add Floor / Section</h3>
-              <button onClick={() => setIsFloorModalOpen(false)}>✕</button>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-white/[0.1]"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-white/[0.08] pb-3">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Add Floor / Section</h3>
+              <button onClick={() => setIsFloorModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <form onSubmit={handleCreateFloor} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Floor / Wing Name</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Floor / Wing Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Floor 4 — Executive Level"
                   value={newFloor.name}
                   onChange={(e) => setNewFloor({ ...newFloor, name: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Level Number</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Level Number</label>
                 <input
                   type="number"
                   value={newFloor.level}
                   onChange={(e) => setNewFloor({ ...newFloor, level: parseInt(e.target.value) || 1 })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsFloorModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold"
+                  className="px-5 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold shadow-md shadow-brand-500/20 active:scale-95"
                 >
                   Create Floor
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* MODAL: ADD ROOM / RESOURCE */}
       {isRoomModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Add Bookable Resource / Room</h3>
-              <button onClick={() => setIsRoomModalOpen(false)}>✕</button>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-white/[0.1]"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-white/[0.08] pb-3">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Add Bookable Resource / Room</h3>
+              <button onClick={() => setIsRoomModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <form onSubmit={handleCreateRoom} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Resource Name *</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Resource Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Video Studio 101"
                   value={newRoom.name}
                   onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Floor / Section</label>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Floor / Section</label>
                   <select
                     value={newRoom.sectionId}
                     onChange={(e) => setNewRoom({ ...newRoom, sectionId: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="">Unassigned</option>
                     {sections.map((s) => (
@@ -559,11 +596,11 @@ export default function PropertyManager() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Resource Type</label>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Resource Type</label>
                   <select
                     value={newRoom.resourceType}
                     onChange={(e) => setNewRoom({ ...newRoom, resourceType: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="meeting_room">Meeting Room</option>
                     <option value="desk">Dedicated Desk</option>
@@ -578,17 +615,17 @@ export default function PropertyManager() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Capacity</label>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Capacity</label>
                   <input
                     type="number"
                     min={1}
                     value={newRoom.capacity}
                     onChange={(e) => setNewRoom({ ...newRoom, capacity: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Pricing Model</label>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pricing Model</label>
                   <select
                     value={newRoom.pricing.model}
                     onChange={(e) =>
@@ -597,7 +634,7 @@ export default function PropertyManager() {
                         pricing: { ...newRoom.pricing, model: e.target.value },
                       })
                     }
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="free">Free / Complimentary</option>
                     <option value="fixed_slot">Fixed Price per Slot</option>
@@ -608,7 +645,7 @@ export default function PropertyManager() {
 
               {newRoom.pricing.model !== 'free' && (
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Price ({newRoom.pricing.currency})</label>
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Price ({newRoom.pricing.currency})</label>
                   <input
                     type="number"
                     min={0}
@@ -619,48 +656,54 @@ export default function PropertyManager() {
                         pricing: { ...newRoom.pricing, price: parseFloat(e.target.value) || 0 },
                       })
                     }
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsRoomModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold"
+                  className="px-5 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold shadow-md shadow-brand-500/20 active:scale-95"
                 >
                   Add Resource
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* MODAL: SCHEDULE MAINTENANCE */}
       {isMaintModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Schedule Facility Maintenance</h3>
-              <button onClick={() => setIsMaintModalOpen(false)}>✕</button>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-white/[0.1]"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-white/[0.08] pb-3">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Schedule Facility Maintenance</h3>
+              <button onClick={() => setIsMaintModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <form onSubmit={handleCreateMaintenance} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Select Resource *</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Resource *</label>
                 <select
                   required
                   value={newMaint.resourceId}
                   onChange={(e) => setNewMaint({ ...newMaint, resourceId: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                 >
                   <option value="">-- Choose Room / Space --</option>
                   {resources.map((r) => (
@@ -670,56 +713,56 @@ export default function PropertyManager() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Start Time (UTC)</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Start Time (UTC)</label>
                 <input
                   type="datetime-local"
                   required
                   value={newMaint.startAt}
                   onChange={(e) => setNewMaint({ ...newMaint, startAt: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">End Time (UTC)</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">End Time (UTC)</label>
                 <input
                   type="datetime-local"
                   required
                   value={newMaint.endAt}
                   onChange={(e) => setNewMaint({ ...newMaint, endAt: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Reason for Maintenance</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Reason for Maintenance</label>
                 <input
                   type="text"
                   required
                   value={newMaint.reason}
                   onChange={(e) => setNewMaint({ ...newMaint, reason: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200"
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsMaintModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold"
+                  className="px-5 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold shadow-md shadow-brand-500/20 active:scale-95"
                 >
                   Confirm Block
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

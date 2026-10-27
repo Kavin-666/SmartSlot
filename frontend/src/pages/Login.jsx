@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Lock, Mail, AlertCircle, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { LogIn, Lock, Mail, AlertCircle, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -34,83 +35,102 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-10 px-4">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-md p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto">
+    <div className="max-w-md mx-auto py-12 px-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="glass-card rounded-3xl p-8 sm:p-9 space-y-6 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-60 h-60 bg-brand-500/10 dark:bg-brand-500/15 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16"></div>
+
+        <div className="text-center space-y-2 relative z-10">
+          <div className="w-12 h-12 bg-gradient-to-tr from-brand-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md shadow-brand-500/20">
             <LogIn className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Sign In to SmartSlot</h1>
-          <p className="text-xs text-slate-500">Access resource availability and active reservations</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Sign In to SmartSlot
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Access discrete slot scheduling and real-time concurrency controls
+          </p>
         </div>
 
         {isExpired && (
-          <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            Your session has expired. Please sign in again.
+          <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs rounded-xl flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-amber-500" />
+            <span>Your session has expired. Please sign in again.</span>
           </div>
         )}
 
         {errorMsg && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {errorMsg}
+          <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs rounded-xl flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
         {/* Demo Fast-Fill Buttons */}
-        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            1-Click Demo Credentials
+        <div className="p-4 glass-card rounded-2xl border border-slate-200/80 dark:border-white/[0.08] space-y-2.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+            1-Click Demo Accounts
           </span>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleDemoFill('user@example.com', 'user123')}
-              className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg font-medium text-slate-700 text-left transition-colors"
+              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-brand-500/50 hover:scale-[1.02] active:scale-95"
             >
-              <div className="font-bold text-slate-800">User Account</div>
-              <div className="text-[10px] text-slate-500">user@example.com</div>
+              <div className="font-bold text-slate-900 dark:text-white text-xs">Tenant</div>
+              <div className="text-[10px] text-slate-400 truncate">user@...</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoFill('owner@example.com', 'owner123')}
+              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-brand-500/50 hover:scale-[1.02] active:scale-95"
+            >
+              <div className="font-bold text-brand-600 dark:text-brand-400 text-xs">Owner</div>
+              <div className="text-[10px] text-slate-400 truncate">owner@...</div>
             </button>
             <button
               type="button"
               onClick={() => handleDemoFill('admin@example.com', 'admin123')}
-              className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg font-medium text-slate-700 text-left transition-colors"
+              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-purple-500/50 hover:scale-[1.02] active:scale-95"
             >
-              <div className="font-bold text-purple-700">Admin Account</div>
-              <div className="text-[10px] text-slate-500">admin@example.com</div>
+              <div className="font-bold text-purple-600 dark:text-purple-400 text-xs">Admin</div>
+              <div className="text-[10px] text-slate-400 truncate">admin@...</div>
             </button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
               />
             </div>
           </div>
@@ -118,19 +138,20 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg shadow-sm shadow-indigo-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 px-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
           >
             {submitting ? 'Authenticating...' : 'Sign In'}
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-600">
+        <p className="text-center text-xs text-slate-600 dark:text-slate-400 pt-2 border-t border-slate-200/70 dark:border-white/[0.08]">
           Don't have an account?{' '}
-          <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-700">
+          <Link to="/register" className="font-bold text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors">
             Create an account
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

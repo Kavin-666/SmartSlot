@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import AIAssistantModal from '../components/ai/AIAssistantModal';
 import { 
   Building2, 
@@ -12,15 +13,11 @@ import {
   ArrowLeft, 
   Sparkles, 
   Layers, 
-  Clock, 
-  ShieldCheck, 
   Phone, 
   Mail, 
   Globe, 
   AlertCircle,
-  Plus,
-  Trash2,
-  Image as ImageIcon
+  Plus
 } from 'lucide-react';
 
 const PREDEFINED_AMENITIES = [
@@ -170,11 +167,10 @@ export default function PropertyWizard() {
     }));
   };
 
-  const handleSubmit = async (publishImmediately = false) => {
+  const handleSubmit = async () => {
     try {
       setSubmitting(true);
 
-      // Build operating hours array from configuration
       const operatingHours = formData.configuration.operatingDays.map((day) => ({
         day,
         start: formData.configuration.startTime,
@@ -196,7 +192,7 @@ export default function PropertyWizard() {
           operatingHours,
         },
         amenities: [...formData.amenities, ...formData.customAmenities],
-        status: 'draft', // Always create as draft first so owner can add rooms
+        status: 'draft',
       };
 
       const res = await api.post('/properties', payload);
@@ -206,7 +202,6 @@ export default function PropertyWizard() {
         `Property "${newProperty.name}" created with ${newProperty.configuration?.floorsCount || 1} floor(s)!`
       );
 
-      // Navigate to property manager so they can configure rooms/resources
       navigate(`/owner/properties/${newProperty._id}/manage`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create property');
@@ -216,39 +211,51 @@ export default function PropertyWizard() {
   };
 
   const steps = [
-    { num: 1, title: 'Basic Information', icon: Building2 },
+    { num: 1, title: 'Basic Info', icon: Building2 },
     { num: 2, title: 'Location', icon: MapPin },
     { num: 3, title: 'Configuration', icon: Sliders },
-    { num: 4, title: 'Facilities & Amenities', icon: Layers },
+    { num: 4, title: 'Amenities', icon: Layers },
     { num: 5, title: 'Review & Publish', icon: CheckCircle2 },
   ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
       {/* Top Banner with AI Assistant button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-            Multi-Tenant Onboarding Wizard
-          </span>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Add your property</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Configure your building, floors, operating schedules, and amenities in 5 simple steps.
-          </p>
-        </div>
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 dark:bg-brand-500/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
 
-        <button
-          type="button"
-          onClick={() => setIsAiModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-100 transition-all self-start sm:self-auto"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>AI Auto-Draft Setup</span>
-        </button>
-      </div>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60">
+              <Building2 className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+              <span>Multi-Tenant Onboarding Wizard</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Add Commercial Property
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+              Configure your building structure, floor hierarchy, operating schedules, and amenities in 5 simple steps.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsAiModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-500/30 transition-all self-start sm:self-auto shrink-0 active:scale-95"
+          >
+            <Sparkles className="w-4 h-4 text-purple-500" />
+            <span>AI Auto-Draft Setup</span>
+          </button>
+        </div>
+      </motion.div>
 
       {/* Step Indicators */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
         {steps.map((s) => {
           const Icon = s.icon;
           const isDone = currentStep > s.num;
@@ -260,47 +267,53 @@ export default function PropertyWizard() {
               onClick={() => {
                 if (isDone) setCurrentStep(s.num);
               }}
-              className={`p-3 rounded-2xl border text-left transition-all ${
+              className={`p-3.5 rounded-2xl border text-left transition-all ${
                 isCurrent
-                  ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-500/20'
+                  ? 'glass-card border-brand-500/50 ring-2 ring-brand-500/20 shadow-md'
                   : isDone
-                  ? 'bg-emerald-50/60 border-emerald-200 cursor-pointer'
-                  : 'bg-white border-slate-200 opacity-60'
+                  ? 'glass-card border-emerald-500/30 text-emerald-600 dark:text-emerald-400 cursor-pointer'
+                  : 'glass-card opacity-50 border-slate-200/40 dark:border-white/[0.04]'
               }`}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1.5">
                 <span
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${
                     isCurrent
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-sm'
                       : isDone
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-200 text-slate-600'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   {isDone ? '✓' : s.num}
                 </span>
-                <Icon className={`w-4 h-4 ${isCurrent ? 'text-indigo-600' : isDone ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isCurrent ? 'text-brand-500' : isDone ? 'text-emerald-500' : 'text-slate-400'}`} />
               </div>
-              <span className="text-xs font-bold text-slate-800 line-clamp-1">{s.title}</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{s.title}</span>
             </div>
           );
         })}
       </div>
 
       {/* Wizard Form Body */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
+      <motion.div 
+        key={currentStep}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="glass-card rounded-3xl p-6 sm:p-10 transition-colors space-y-6"
+      >
         {/* STEP 1: BASIC INFORMATION */}
         {currentStep === 1 && (
-          <div className="space-y-6 animate-in fade-in">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-xl font-bold text-slate-900">Step 1 — Basic Property Information</h2>
-              <p className="text-xs text-slate-500">Provide the commercial identity and description of your property.</p>
+          <div className="space-y-6">
+            <div className="border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Step 1 — Basic Property Information</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Provide the commercial identity and description of your property.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Property Name *
                 </label>
                 <input
@@ -309,19 +322,19 @@ export default function PropertyWizard() {
                   placeholder="e.g. Nexus Innovation Tower"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Property Type
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="coworking">Co-working Space</option>
                     <option value="office_building">Office Building</option>
@@ -337,7 +350,7 @@ export default function PropertyWizard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Cover Image URL
                   </label>
                   <input
@@ -345,23 +358,23 @@ export default function PropertyWizard() {
                     placeholder="https://..."
                     value={formData.coverImage}
                     onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
                   />
                 </div>
               </div>
 
               {/* Cover Image Preset Selector */}
               <div>
-                <span className="text-[11px] text-slate-500 block mb-1.5 font-medium">Or choose a professional preset photo:</span>
-                <div className="grid grid-cols-4 gap-2">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block mb-2 font-semibold">Or select a curated preset photo:</span>
+                <div className="grid grid-cols-4 gap-2.5">
                   {PRESET_IMAGES.map((img, i) => (
                     <img
                       key={i}
                       src={img}
                       alt="Preset"
                       onClick={() => setFormData({ ...formData, coverImage: img })}
-                      className={`h-16 w-full object-cover rounded-xl cursor-pointer border-2 transition-all ${
-                        formData.coverImage === img ? 'border-indigo-600 scale-[1.02]' : 'border-transparent opacity-75 hover:opacity-100'
+                      className={`h-18 w-full object-cover rounded-xl cursor-pointer border-2 transition-all ${
+                        formData.coverImage === img ? 'border-brand-500 scale-[1.02] shadow-md' : 'border-transparent opacity-75 hover:opacity-100'
                       }`}
                     />
                   ))}
@@ -369,7 +382,7 @@ export default function PropertyWizard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -377,46 +390,46 @@ export default function PropertyWizard() {
                   placeholder="Describe your building layout, architecture, amenities, and community vibe..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-3.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  className="w-full p-3.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
                 />
               </div>
 
               {/* Contact Info */}
-              <div className="pt-2 border-t border-slate-100 grid sm:grid-cols-3 gap-3 text-xs">
+              <div className="pt-3 border-t border-slate-200/70 dark:border-white/[0.08] grid sm:grid-cols-3 gap-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-brand-500" /> Phone
                   </label>
                   <input
                     type="text"
                     placeholder="+1 (555) 0199"
                     value={formData.contact.phone}
                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, phone: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white text-xs shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" /> Email
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-brand-500" /> Email
                   </label>
                   <input
                     type="email"
                     placeholder="contact@property.com"
                     value={formData.contact.email}
                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, email: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white text-xs shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5 text-slate-400" /> Website
+                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                    <Globe className="w-3.5 h-3.5 text-brand-500" /> Website
                   </label>
                   <input
                     type="url"
                     placeholder="https://..."
                     value={formData.contact.website}
                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, website: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white text-xs shadow-sm"
                   />
                 </div>
               </div>
@@ -426,15 +439,15 @@ export default function PropertyWizard() {
 
         {/* STEP 2: LOCATION */}
         {currentStep === 2 && (
-          <div className="space-y-6 animate-in fade-in">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-xl font-bold text-slate-900">Step 2 — Location & Timezone</h2>
-              <p className="text-xs text-slate-500">Configure physical address and canonical timezone for schedule generation.</p>
+          <div className="space-y-6">
+            <div className="border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Step 2 — Location & Timezone</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure physical address and canonical timezone for schedule generation.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Street Address *
                 </label>
                 <input
@@ -443,13 +456,13 @@ export default function PropertyWizard() {
                   placeholder="e.g. 400 Congress Avenue, Suite 1200"
                   value={formData.location.address}
                   onChange={(e) => setFormData({ ...formData, location: { ...formData.location, address: e.target.value } })}
-                  className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition-all shadow-sm"
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     City *
                   </label>
                   <input
@@ -458,12 +471,12 @@ export default function PropertyWizard() {
                     placeholder="e.g. Austin"
                     value={formData.location.city}
                     onChange={(e) => setFormData({ ...formData, location: { ...formData.location, city: e.target.value } })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     State / Region
                   </label>
                   <input
@@ -471,14 +484,14 @@ export default function PropertyWizard() {
                     placeholder="e.g. Texas"
                     value={formData.location.state}
                     onChange={(e) => setFormData({ ...formData, location: { ...formData.location, state: e.target.value } })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Postal Code
                   </label>
                   <input
@@ -486,30 +499,30 @@ export default function PropertyWizard() {
                     placeholder="78701"
                     value={formData.location.postalCode}
                     onChange={(e) => setFormData({ ...formData, location: { ...formData.location, postalCode: e.target.value } })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Country
                   </label>
                   <input
                     type="text"
                     value={formData.location.country}
                     onChange={(e) => setFormData({ ...formData, location: { ...formData.location, country: e.target.value } })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Timezone
                   </label>
                   <select
                     value={formData.location.timezone}
                     onChange={(e) => setFormData({ ...formData, location: { ...formData.location, timezone: e.target.value } })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="America/New_York">Eastern Time (ET)</option>
                     <option value="America/Chicago">Central Time (CT)</option>
@@ -526,17 +539,17 @@ export default function PropertyWizard() {
 
         {/* STEP 3: PROPERTY CONFIGURATION */}
         {currentStep === 3 && (
-          <div className="space-y-6 animate-in fade-in">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-xl font-bold text-slate-900">Step 3 — Property Configuration & Hours</h2>
-              <p className="text-xs text-slate-500">Define building floors count, operating days, and cancellation rules.</p>
+          <div className="space-y-6">
+            <div className="border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Step 3 — Property Configuration & Hours</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Define building floors count, operating days, and cancellation rules.</p>
             </div>
 
             <div className="space-y-5">
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                    Number of Floors / Sections
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Number of Floors / Levels
                   </label>
                   <input
                     type="number"
@@ -549,13 +562,13 @@ export default function PropertyWizard() {
                         configuration: { ...formData.configuration, floorsCount: parseInt(e.target.value) || 1 },
                       })
                     }
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Floors 1..N automatically generated</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 block">Floors 1..N automatically scaffolded</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Default Slot Duration
                   </label>
                   <select
@@ -566,7 +579,7 @@ export default function PropertyWizard() {
                         configuration: { ...formData.configuration, defaultSlotDuration: parseInt(e.target.value) },
                       })
                     }
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="15">15 minutes</option>
                     <option value="30">30 minutes (Standard)</option>
@@ -576,7 +589,7 @@ export default function PropertyWizard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Cancellation Policy
                   </label>
                   <select
@@ -587,7 +600,7 @@ export default function PropertyWizard() {
                         configuration: { ...formData.configuration, cancellationPolicy: e.target.value },
                       })
                     }
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm cursor-pointer"
                   >
                     <option value="flexible">Flexible (Up to 1 hr prior)</option>
                     <option value="moderate">Moderate (Up to 24 hrs prior)</option>
@@ -597,13 +610,13 @@ export default function PropertyWizard() {
               </div>
 
               {/* Operating Hours */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              <div className="p-5 glass-card rounded-2xl border border-slate-200/70 dark:border-white/[0.08] space-y-3">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Standard Operating Hours (Inherited by Rooms)
                 </label>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-600 mb-1">Opening Time</label>
+                    <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Opening Time</label>
                     <input
                       type="time"
                       value={formData.configuration.startTime}
@@ -613,11 +626,11 @@ export default function PropertyWizard() {
                           configuration: { ...formData.configuration, startTime: e.target.value },
                         })
                       }
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-600 mb-1">Closing Time</label>
+                    <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Closing Time</label>
                     <input
                       type="time"
                       value={formData.configuration.endTime}
@@ -627,7 +640,7 @@ export default function PropertyWizard() {
                           configuration: { ...formData.configuration, endTime: e.target.value },
                         })
                       }
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white shadow-sm"
                     />
                   </div>
                 </div>
@@ -638,10 +651,10 @@ export default function PropertyWizard() {
 
         {/* STEP 4: AMENITIES */}
         {currentStep === 4 && (
-          <div className="space-y-6 animate-in fade-in">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-xl font-bold text-slate-900">Step 4 — Facilities & Amenities</h2>
-              <p className="text-xs text-slate-500">Select available features and add custom property amenities.</p>
+          <div className="space-y-6">
+            <div className="border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Step 4 — Facilities & Amenities</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Select available features and add custom property amenities.</p>
             </div>
 
             <div className="space-y-5">
@@ -652,16 +665,16 @@ export default function PropertyWizard() {
                     <div
                       key={amenity}
                       onClick={() => toggleAmenity(amenity)}
-                      className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
+                      className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
                         isChecked
-                          ? 'bg-indigo-50 border-indigo-300 text-indigo-900 font-bold'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                          ? 'glass-card border-brand-500 text-brand-700 dark:text-brand-300 font-bold shadow-sm'
+                          : 'glass-card opacity-80 border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300 hover:border-slate-300'
                       }`}
                     >
                       <span className="text-xs">{amenity}</span>
                       <div
-                        className={`w-4 h-4 rounded flex items-center justify-center text-[10px] ${
-                          isChecked ? 'bg-indigo-600 text-white' : 'border border-slate-300'
+                        className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] ${
+                          isChecked ? 'bg-brand-600 text-white' : 'border border-slate-300 dark:border-slate-600'
                         }`}
                       >
                         {isChecked && '✓'}
@@ -672,8 +685,8 @@ export default function PropertyWizard() {
               </div>
 
               {/* Custom Amenities */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              <div className="pt-3 border-t border-slate-200/70 dark:border-white/[0.08] space-y-2.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Custom Amenities
                 </label>
                 <div className="flex gap-2">
@@ -682,15 +695,15 @@ export default function PropertyWizard() {
                     placeholder="e.g. Rooftop Meditation Deck"
                     value={customAmenityInput}
                     onChange={(e) => setCustomAmenityInput(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-200"
+                    className="flex-1 px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-white/[0.1] bg-white/90 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm"
                   />
                   <button
                     type="button"
                     onClick={addCustomAmenity}
-                    className="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 flex items-center gap-1"
+                    className="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 flex items-center gap-1.5 active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Add
+                    <span>Add</span>
                   </button>
                 </div>
 
@@ -699,13 +712,13 @@ export default function PropertyWizard() {
                     {formData.customAmenities.map((ca, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-xs font-semibold border border-brand-200/50 dark:border-brand-800/50"
                       >
                         {ca}
                         <button
                           type="button"
                           onClick={() => removeCustomAmenity(idx)}
-                          className="hover:text-rose-600"
+                          className="hover:text-rose-600 dark:hover:text-rose-400 font-bold"
                         >
                           ✕
                         </button>
@@ -720,69 +733,69 @@ export default function PropertyWizard() {
 
         {/* STEP 5: REVIEW & PUBLISH */}
         {currentStep === 5 && (
-          <div className="space-y-6 animate-in fade-in">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-xl font-bold text-slate-900">Step 5 — Review & Confirm Property Creation</h2>
-              <p className="text-xs text-slate-500">Review your property details before saving to your multi-tenant organization.</p>
+          <div className="space-y-6">
+            <div className="border-b border-slate-200/70 dark:border-white/[0.08] pb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Step 5 — Review & Confirm Property Creation</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Review your property details before saving to your multi-tenant organization.</p>
             </div>
 
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-5">
+            <div className="glass-card rounded-2xl p-6 sm:p-7 space-y-6 border border-slate-200/80 dark:border-white/[0.08]">
               <div className="flex flex-col sm:flex-row gap-5">
                 <img
                   src={formData.coverImage}
                   alt={formData.name}
-                  className="w-full sm:w-44 h-32 object-cover rounded-xl shadow-sm"
+                  className="w-full sm:w-48 h-36 object-cover rounded-2xl shadow-sm"
                 />
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200/40">
                       {formData.type.replace('_', ' ')}
                     </span>
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                       {formData.configuration.floorsCount} Level(s)
                     </span>
                   </div>
-                  <h3 className="text-xl font-extrabold text-slate-900">{formData.name}</h3>
-                  <p className="text-xs text-slate-600 line-clamp-2">{formData.description || 'No description provided.'}</p>
-                  <div className="text-xs text-slate-500 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{formData.name}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">{formData.description || 'No description provided.'}</p>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 pt-1">
+                    <MapPin className="w-3.5 h-3.5 text-brand-500" />
                     <span>{formData.location.address}, {formData.location.city}, {formData.location.country}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-200/80 grid sm:grid-cols-3 gap-3 text-xs text-slate-600">
-                <div className="bg-white p-3 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Operating Hours</span>
-                  <span className="font-bold text-slate-800">{formData.configuration.startTime} – {formData.configuration.endTime} UTC</span>
+              <div className="pt-4 border-t border-slate-200/70 dark:border-white/[0.08] grid sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-400">
+                <div className="glass-card p-3.5 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Operating Hours</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-0.5 block">{formData.configuration.startTime} – {formData.configuration.endTime} UTC</span>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Slot Duration</span>
-                  <span className="font-bold text-slate-800">{formData.configuration.defaultSlotDuration} min discrete intervals</span>
+                <div className="glass-card p-3.5 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Slot Duration</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-0.5 block">{formData.configuration.defaultSlotDuration} min intervals</span>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Cancellation Policy</span>
-                  <span className="font-bold text-slate-800 capitalize">{formData.configuration.cancellationPolicy}</span>
+                <div className="glass-card p-3.5 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block">Cancellation Policy</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-0.5 block capitalize">{formData.configuration.cancellationPolicy}</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1.5">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase block mb-2">
                   Selected Amenities ({formData.amenities.length + formData.customAmenities.length})
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {[...formData.amenities, ...formData.customAmenities].map((a, i) => (
-                    <span key={i} className="text-xs px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium">
+                    <span key={i} className="text-xs px-3 py-1 bg-slate-100 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 rounded-xl font-medium">
                       {a}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="p-3.5 bg-blue-50 border border-blue-200 text-blue-900 text-xs rounded-xl flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <p>
-                  <strong>Next Step:</strong> Upon creation, you will enter the Property Management Workspace where you can add rooms to each floor, configure pricing, and publish for public bookings.
+              <div className="p-4 bg-brand-500/10 border border-brand-500/20 text-brand-950 dark:text-brand-200 text-xs rounded-2xl flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  <strong>Next Step:</strong> Upon creation, you will enter the Property Management Workspace where you can add rooms to each floor, configure capacity & pricing, and publish for public bookings.
                 </p>
               </div>
             </div>
@@ -790,15 +803,15 @@ export default function PropertyWizard() {
         )}
 
         {/* Wizard Navigation Footer */}
-        <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+        <div className="pt-6 border-t border-slate-200/70 dark:border-white/[0.08] flex items-center justify-between">
           {currentStep > 1 ? (
             <button
               type="button"
               onClick={handleBack}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Previous Step
+              <span>Previous Step</span>
             </button>
           ) : (
             <div></div>
@@ -808,7 +821,7 @@ export default function PropertyWizard() {
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm shadow-indigo-100 flex items-center gap-1.5"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 flex items-center gap-1.5 transition-all active:scale-95"
             >
               <span>Next Step</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -817,15 +830,15 @@ export default function PropertyWizard() {
             <button
               type="button"
               disabled={submitting}
-              onClick={() => handleSubmit(false)}
-              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-100 flex items-center gap-1.5 disabled:opacity-50"
+              onClick={() => handleSubmit()}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1.5 disabled:opacity-50 transition-all active:scale-95"
             >
               {submitting ? 'Creating Property...' : 'Save & Configure Rooms'}
               <CheckCircle2 className="w-4 h-4" />
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* AI Assistant Modal */}
       <AIAssistantModal

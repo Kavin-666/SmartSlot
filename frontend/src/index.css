@@ -3,6 +3,122 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+@layer base {
+  body {
+    @apply bg-[#f8fafc] text-slate-900 dark:bg-[#080b11] dark:text-slate-100 antialiased transition-colors duration-200 selection:bg-indigo-500 selection:text-white font-sans;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300/80 dark:bg-slate-800 rounded-full hover:bg-slate-400 dark:hover:bg-slate-700;
+  }
+}
+
+@keyframes floatOrb1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -25px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.96);
+  }
+}
+
+@keyframes floatOrb2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-35px, 25px) scale(1.08);
+  }
+  66% {
+    transform: translate(25px, -20px) scale(0.94);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@layer utilities {
+  .animate-orb-1 {
+    animation: floatOrb1 24s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-orb-2 {
+    animation: floatOrb2 28s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* Architectural Blueprint Grid Pattern */
+  .bg-blueprint-grid {
+    background-size: 36px 36px;
+    background-image: 
+      linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+  }
+  
+  .dark .bg-blueprint-grid {
+    background-size: 36px 36px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+
+  /* Dot Matrix Pattern */
+  .bg-dot-matrix {
+    background-image: radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark .bg-dot-matrix {
+    background-image: radial-gradient(rgba(129, 140, 248, 0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Modern Glass Card */
+  .glass-card {
+    @apply bg-white/80 dark:bg-[#0d121c]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.07] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)];
+  }
+
+  .glass-card-hover {
+    @apply glass-card hover:border-indigo-400/50 dark:hover:border-indigo-500/40 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_-4px_rgba(99,102,241,0.15)] transition-all duration-300;
+  }
+
+  /* Linear-style gradient border */
+  .gradient-border-top {
+    position: relative;
+  }
+  .gradient-border-top::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+  }
+
+  /* Skeleton loading shimmer */
+  .skeleton {
+    @apply relative overflow-hidden bg-slate-200/80 dark:bg-slate-800/80 rounded;
+  }
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0));
+    animation: shimmer 2s infinite;
+    content: '';
+  }
 }
