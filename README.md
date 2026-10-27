@@ -75,7 +75,7 @@ flowchart TD
         BE -->|Mongoose| DB[MongoDB Atlas]
     end
     FE -->|Static assets| CDN[Vercel Edge]
-    BE -->|Health endpoint| HC[/api/health]
+    BE -->|Health endpoint| HC["/api/health"]
 ```
 
 - **Frontend** makes HTTP requests to the backend. In production the base URL is supplied via the `VITE_API_BASE_URL` environment variable.
