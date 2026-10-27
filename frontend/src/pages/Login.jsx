@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { LogIn, Lock, Mail, AlertCircle, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { LogIn, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,11 +28,6 @@ export default function Login() {
     }
   };
 
-  const handleDemoFill = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setErrorMsg('');
-  };
 
   return (
     <div className="max-w-md mx-auto py-12 px-4">
@@ -70,39 +65,7 @@ export default function Login() {
           </div>
         )}
 
-        {/* Demo Fast-Fill Buttons */}
-        <div className="p-4 glass-card rounded-2xl border border-slate-200/80 dark:border-white/[0.08] space-y-2.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
-            1-Click Demo Accounts
-          </span>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => handleDemoFill('user@example.com', 'user123')}
-              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-brand-500/50 hover:scale-[1.02] active:scale-95"
-            >
-              <div className="font-bold text-slate-900 dark:text-white text-xs">Tenant</div>
-              <div className="text-[10px] text-slate-400 truncate">user@...</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoFill('owner@example.com', 'owner123')}
-              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-brand-500/50 hover:scale-[1.02] active:scale-95"
-            >
-              <div className="font-bold text-brand-600 dark:text-brand-400 text-xs">Owner</div>
-              <div className="text-[10px] text-slate-400 truncate">owner@...</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoFill('admin@example.com', 'admin123')}
-              className="p-2.5 glass-card rounded-xl text-left transition-all hover:border-purple-500/50 hover:scale-[1.02] active:scale-95"
-            >
-              <div className="font-bold text-purple-600 dark:text-purple-400 text-xs">Admin</div>
-              <div className="text-[10px] text-slate-400 truncate">admin@...</div>
-            </button>
-          </div>
-        </div>
+
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
