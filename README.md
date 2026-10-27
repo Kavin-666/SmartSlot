@@ -20,6 +20,12 @@ SmartSlot is a full‑stack JavaScript application that provides a **production�
 ---
 
 ## 🎮 Demo
+- **Frontend (Vercel):** `https://smart-slot-o66jt5ybe-kavin-079c.vercel.app, https://smart-slot-lpfwr15t6-kavin-079c.vercel.app, https://smart-slot-1pfwrl5t6-kavin-079c.vercel.app, https://smart-slot-nnmy1urwz-kavin-079c.vercel.app`
+- **Backend (Render):** `https://smartslot-1-ih37.onrender.com`
+- **Health Check:** `https://smartslot-1-ih37.onrender.com/api/health`
+- **Frontend (Vercel):** `https://smart-slot-1pfwrl5t6-kavin-079c.vercel.app`
+- **Backend (Render):** `https://smartslot-1-ih37.onrender.com`
+- **Health Check:** `https://smartslot-1-ih37.onrender.com/api/health`
 - **Frontend (Vercel):** `https://<your‑frontend>.vercel.app`
 - **Backend (Render):** `https://<your‑backend>.onrender.com`
 - **Health Check:** `https://<your‑backend>.onrender.com/api/health`
